@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "aaron-bond.better-comments",
+        "anthropic.claude-code",
         "eamodio.gitlens",
         "esbenp.prettier-vscode",
         "github.copilot-chat",
