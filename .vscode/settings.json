@@ -1,0 +1,19 @@
+{
+    "cSpell.words": [],
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.guides.bracketPairs": "active",
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+    "files.insertFinalNewline": true,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "material-icon-theme.activeIconPack": "nest",
+    "prettier.resolveGlobalModules": true,
+    "trailing-spaces.trimOnSave": true,
+    "workbench.iconTheme": "material-icon-theme"
+}

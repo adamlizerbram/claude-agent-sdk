@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "aaron-bond.better-comments",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "github.copilot-chat",
+        "pkief.material-icon-theme",
+        "shardulm94.trailing-spaces",
+        "streetsidesoftware.code-spell-checker",
+        "yoavbls.pretty-ts-errors"
+    ]
+}
