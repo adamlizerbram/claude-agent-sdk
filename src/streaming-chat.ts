@@ -1,5 +1,9 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import chalk from "chalk";
+import { marked } from "marked";
+import { markedTerminal } from "marked-terminal";
+
+marked.use(markedTerminal() as any);
 
 const youLabel = chalk.bold.yellow("You: ");
 const agentLabel = chalk.bold.magenta("Agent: ");
@@ -14,6 +18,9 @@ const sharedOptions = {
     includePartialMessages: true,
 };
 
+let chunks: string[] = [];
+let lineCount = 0;
+
 function handleStream(message: any) {
     if ("session_id" in message) sessionId = message.session_id;
 
@@ -23,16 +30,26 @@ function handleStream(message: any) {
         message.event?.type === "content_block_delta" &&
         message.event.delta?.type === "text_delta"
     ) {
-        process.stdout.write(message.event.delta.text);
+        const text = message.event.delta.text;
+        chunks.push(text);
+        process.stdout.write(text);
+        lineCount += (text.match(/\n/g) || []).length;
     }
 
-    // Print a newline after the final result
-    if ("result" in message) console.log();
+    // Re-render with formatted markdown once complete
+    if ("result" in message) {
+        // Move cursor up and clear the raw streamed text
+        process.stdout.write(`\x1b[${lineCount + 1}A\x1b[0J`);
+        // Render formatted markdown
+        const formatted = marked.parse(chunks.join("")) as string;
+        process.stdout.write(agentLabel + formatted.trimEnd() + "\n");
+        chunks = [];
+        lineCount = 0;
+    }
 }
 
 let input: string = prompt(youLabel) || "";
 console.log();
-process.stdout.write(agentLabel);
 
 for await (const message of query({
     prompt:
@@ -48,7 +65,6 @@ while (true) {
     input = prompt(youLabel) || "";
     if (input === "exit") break;
     console.log();
-    process.stdout.write(agentLabel);
 
     for await (const message of query({
         prompt: input,
