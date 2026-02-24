@@ -48,8 +48,18 @@ async function sendMessage(userPrompt: string, resume?: string) {
     })) {
         if ("session_id" in message) sessionId = message.session_id;
 
-        if (message.type === "tool_progress") {
-            startToolSpinner(message.tool_name);
+        // Detect tool use starting via stream events
+        if (
+            message.type === "stream_event" &&
+            message.event?.type === "content_block_start" &&
+            message.event.content_block?.type === "tool_use"
+        ) {
+            startToolSpinner(message.event.content_block.name);
+        }
+
+        // Stop spinner when we get tool results back
+        if (message.type === "user") {
+            stopToolSpinner();
         }
 
         if (
