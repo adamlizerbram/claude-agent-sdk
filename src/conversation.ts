@@ -8,22 +8,29 @@ console.log(
 
 let input: string = prompt("You: ") || "";
 
+console.log("Thinking...");
 for await (const message of query({
-    prompt: input,
-    options: { allowedTools: ["GoogleSearch", "Read"] },
+    prompt:
+        "Research the following topic and provide a summary, and ask follow up questions about the topic: " +
+        input,
+    options: { allowedTools: ["WebSearch", "WebFetch", "Read"] },
 })) {
     if ("session_id" in message) sessionId = message.session_id;
-    if ("result" in message) console.log(message.result);
+    if ("result" in message) console.log("Agent:", message.result);
 }
 
 while (true) {
     input = prompt("You: ") || "";
     if (input === "exit") break;
 
+    console.log("Thinking...");
     for await (const message of query({
         prompt: input,
-        options: { allowedTools: ["GoogleSearch", "Read"], resume: sessionId },
+        options: {
+            allowedTools: ["WebSearch", "WebFetch", "Read"],
+            resume: sessionId,
+        },
     })) {
-        if ("result" in message) console.log(message.result);
+        if ("result" in message) console.log("Agent:", message.result);
     }
 }
