@@ -19,6 +19,28 @@ const sharedOptions = {
 
 async function sendMessage(userPrompt: string, resume?: string) {
     let started = false;
+    let toolSpinner: ReturnType<typeof setInterval> | null = null;
+    let toolTick = 0;
+
+    function startToolSpinner(toolName: string) {
+        stopToolSpinner();
+        toolTick = 0;
+        toolSpinner = setInterval(() => {
+            const dots = ".".repeat(toolTick % 4);
+            process.stdout.write(
+                `\r\x1b[K${chalk.dim(`Using ${toolName}${dots}`)}`,
+            );
+            toolTick++;
+        }, 300);
+    }
+
+    function stopToolSpinner() {
+        if (toolSpinner) {
+            clearInterval(toolSpinner);
+            toolSpinner = null;
+            process.stdout.write("\r\x1b[K");
+        }
+    }
 
     for await (const message of query({
         prompt: systemPrompt + "\n\n" + userPrompt,
@@ -26,11 +48,16 @@ async function sendMessage(userPrompt: string, resume?: string) {
     })) {
         if ("session_id" in message) sessionId = message.session_id;
 
+        if (message.type === "tool_progress") {
+            startToolSpinner(message.tool_name);
+        }
+
         if (
             message.type === "stream_event" &&
             message.event?.type === "content_block_delta" &&
             message.event.delta?.type === "text_delta"
         ) {
+            stopToolSpinner();
             if (!started) {
                 process.stdout.write(agentLabel);
                 started = true;
@@ -38,7 +65,10 @@ async function sendMessage(userPrompt: string, resume?: string) {
             process.stdout.write(message.event.delta.text);
         }
 
-        if ("result" in message) console.log();
+        if ("result" in message) {
+            stopToolSpinner();
+            console.log();
+        }
     }
 }
 
