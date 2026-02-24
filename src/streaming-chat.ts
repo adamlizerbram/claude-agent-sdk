@@ -1,5 +1,6 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import chalk from "chalk";
+import { ToolSpinner } from "./tool-spinner";
 
 const youLabel = chalk.bold.yellow("You: ");
 const agentLabel = chalk.bold.magenta("Agent: ");
@@ -19,28 +20,7 @@ const sharedOptions = {
 
 async function sendMessage(userPrompt: string, resume?: string) {
     let started = false;
-    let toolSpinner: ReturnType<typeof setInterval> | null = null;
-    let toolTick = 0;
-
-    function startToolSpinner(toolName: string) {
-        stopToolSpinner();
-        toolTick = 0;
-        toolSpinner = setInterval(() => {
-            const dots = ".".repeat(toolTick % 4);
-            process.stdout.write(
-                `\r\x1b[K${chalk.dim(`Using ${toolName}${dots}`)}`,
-            );
-            toolTick++;
-        }, 300);
-    }
-
-    function stopToolSpinner() {
-        if (toolSpinner) {
-            clearInterval(toolSpinner);
-            toolSpinner = null;
-            process.stdout.write("\r\x1b[K");
-        }
-    }
+    const spinner = new ToolSpinner();
 
     for await (const message of query({
         prompt: systemPrompt + "\n\n" + userPrompt,
@@ -54,12 +34,12 @@ async function sendMessage(userPrompt: string, resume?: string) {
             message.event?.type === "content_block_start" &&
             message.event.content_block?.type === "tool_use"
         ) {
-            startToolSpinner(message.event.content_block.name);
+            spinner.start(message.event.content_block.name);
         }
 
         // Stop spinner when we get tool results back
         if (message.type === "user") {
-            stopToolSpinner();
+            spinner.stop();
         }
 
         if (
@@ -67,7 +47,7 @@ async function sendMessage(userPrompt: string, resume?: string) {
             message.event?.type === "content_block_delta" &&
             message.event.delta?.type === "text_delta"
         ) {
-            stopToolSpinner();
+            spinner.stop();
             if (!started) {
                 process.stdout.write(agentLabel);
                 started = true;
@@ -76,7 +56,7 @@ async function sendMessage(userPrompt: string, resume?: string) {
         }
 
         if ("result" in message) {
-            stopToolSpinner();
+            spinner.stop();
             console.log();
         }
     }
