@@ -1,4 +1,8 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
+import chalk from "chalk";
+
+const youLabel = chalk.bold.yellow("You: ");
+const agentLabel = chalk.bold.magenta("Agent: ");
 
 let sessionId: string | undefined;
 console.log(
@@ -26,8 +30,9 @@ function handleStream(message: any) {
     if ("result" in message) console.log();
 }
 
-let input: string = prompt("You: ") || "";
+let input: string = prompt(youLabel) || "";
 console.log();
+process.stdout.write(agentLabel);
 
 for await (const message of query({
     prompt:
@@ -40,9 +45,10 @@ for await (const message of query({
 
 while (true) {
     console.log();
-    input = prompt("You: ") || "";
+    input = prompt(youLabel) || "";
     if (input === "exit") break;
     console.log();
+    process.stdout.write(agentLabel);
 
     for await (const message of query({
         prompt: input,
