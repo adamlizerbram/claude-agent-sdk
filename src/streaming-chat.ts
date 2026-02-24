@@ -27,10 +27,11 @@ function handleStream(message: any) {
 }
 
 let input: string = prompt("You: ") || "";
+console.log();
 
 for await (const message of query({
     prompt:
-        "Research the following topic and provide a summary, and ask follow up questions about the topic: " +
+        "Research the following topic and provide a summary, and ask follow up questions about the topic. Be concise and clear: " +
         input,
     options: sharedOptions,
 })) {
@@ -38,8 +39,10 @@ for await (const message of query({
 }
 
 while (true) {
+    console.log();
     input = prompt("You: ") || "";
     if (input === "exit") break;
+    console.log();
 
     for await (const message of query({
         prompt: input,
