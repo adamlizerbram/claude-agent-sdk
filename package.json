@@ -3,6 +3,18 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "workspaces": [
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "dev:fe": "bun run --cwd packages/frontend dev",
+    "dev:be": "bun run --cwd packages/backend dev",
+    "build:fe": "bun run --cwd packages/frontend build",
+    "build:be": "bun run --cwd packages/backend build",
+    "start:fe": "bun run --cwd packages/frontend start",
+    "start:be": "bun run --cwd packages/backend start"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
